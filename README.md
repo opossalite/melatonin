@@ -1,5 +1,5 @@
 # music-player
 in progress music player
 
-rust (rocket) + react + tauri
+rust (rocket) + react + vite + tauri
 
