@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { fly } from "svelte/transition";
     import Header from "./Header.svelte";
 
     let formState = $state({
@@ -8,6 +9,8 @@
     });
 
     $inspect(formState.step);
+
+
 
     const QUESTIONS = [
         {
@@ -71,7 +74,9 @@
     <!-- {#each QUESTIONS as question(question.id)} -->
     {#each QUESTIONS as question, i (question.id)}
         {#if (formState.step === i)}
-            {@render formStep(question)}
+            <div in:fly={{x: 200, duration: 200, opacity: 0, delay: 200}} out:fly={{x: -200, duration: 200, opacity: 0}}>
+                {@render formStep(question)}
+            </div>
         {/if}
     {/each}
 
