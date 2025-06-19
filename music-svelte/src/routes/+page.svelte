@@ -10,7 +10,12 @@
 
 </script>
 
-<Header name={formState.name}/>
+<Header name={formState.name}>
+    <p>Hello</p>
+    {#snippet secondChild(name)}
+        <p>Second Child {name}</p>
+    {/snippet}
+</Header>
 
 <main>
     <p>Step: {formState.step}</p>
