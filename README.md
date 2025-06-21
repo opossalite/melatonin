@@ -12,3 +12,9 @@ rust (rodio) + svelte + tauri
 notes:
 `npm run dev` for react and svelte
 
+dependencies (with opensuse package names): SORRY THESE ARE JUST TAURI DEPENDENCIES
+glib-2.0 (glib2-devel)
+gdk-3.0 (gtk3-devel)
+libsoup-3.0 (libsoup-devel)
+javascriptcoregtk-4.1 ()
+
