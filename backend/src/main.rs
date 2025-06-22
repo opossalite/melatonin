@@ -1,7 +1,7 @@
 #[macro_use] extern crate rocket;
 use rocket::serde::json::Json;
 use rocket_cors::CorsOptions;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use rand::{self, Rng};
 
 //#[get("/")]
@@ -9,19 +9,36 @@ use rand::{self, Rng};
 //    "Hello World!"
 //}
 
+
+#[derive(Debug, Deserialize)]
+struct UpperReq {
+    word: String,
+}
 #[derive(Serialize)]
-struct RollResult {
-    value: u8
+struct UpperRes {
+    word_upper: String,
+}
+#[post("/upper", format = "json", data = "<msg>")]
+fn upper(msg: Json<UpperReq>) -> Json<UpperRes> {
+    Json(UpperRes {word_upper: msg.into_inner().word.to_uppercase()})
+}
+#[options("/upper")]
+fn upper_options() -> &'static str {
+    ""
 }
 
-#[post("/roll")]
-fn roll() -> Json<RollResult> {
+#[derive(Serialize)]
+struct RollRes {
+    value: u8
+}
+#[get("/roll")]
+fn roll() -> Json<RollRes> {
     let rolled = rand::rng().random_range(1..7);
-    Json(RollResult {value: rolled})
+    Json(RollRes {value: rolled})
 }
 #[options("/roll")]
-fn roll_options() -> &'static str {
-    "" // Needed for CORS preflight to succeed
+fn roll_options() -> &'static str { //don't question this, it's better this way
+    ""
 }
 
 #[launch]
@@ -32,7 +49,7 @@ fn rocket() -> _ {
 
     rocket::build()
         .configure(rocket::Config::figment().merge(("port", 8800)))
-        .mount("/", routes![roll])
+        .mount("/", routes![roll, roll_options, upper, upper_options])
         .attach(cors)
 }
 

@@ -7,19 +7,37 @@
 
 
 
-    let number = $state(1);
+    let roll_result = $state("-");
     async function roll() {
-        const response = await fetch("http://localhost:8800/roll", {
+        //const response = await fetch("http://localhost:8800/roll", {
+        //    method: "POST",
+        //    headers: {
+        //        "Content-Type": "application/json"
+        //    },
+        //    body: JSON.stringify({ message: "roll" })
+        //});
+        const response = await fetch("http://localhost:8800/roll");
+        //number = response.json(); //might have to await
+        const json = await response.json();
+        roll_result = json.value;
+    }
+
+    let word = $state("");
+    let word_upper = $state("");
+    async function upper() {
+        const response = await fetch("http://localhost:8800/upper", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ message: "roll" })
+            body: JSON.stringify({word}),
         });
-        //number = response.json(); //might have to await
         const json = await response.json();
-        number = json.value;
+        word_upper = json.word_upper;
     }
+    $effect(() => {
+        upper();
+    })
 
 
 
@@ -85,12 +103,18 @@
 
 
 <Header name={formState.answers.name}/>
+<br>
 <div>
-    <p>Roll some dice!</p>
-    <input type="button" id="roll" onclick={() => roll()}>
-    <p>Result: {number}</p>
+    Roll some dice!
+    <button onclick={() => roll()}>{roll_result}</button>
 </div>
+<br>
+<div>
+    <input type="text" bind:value={word}>
+    <br>
+    -> {word_upper}
 
+</div>
 <main>
     {#if formState.step >= QUESTIONS.length}
         <p>Thank you!</p>
@@ -132,6 +156,10 @@
 <style>
     .error {
         color: red;
+    }
+
+    .horiz {
+        display: inline-block;
     }
 </style>
 
