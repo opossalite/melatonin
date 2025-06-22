@@ -2,11 +2,33 @@
     import { fly } from "svelte/transition";
     import Header from "./Header.svelte";
 
+    
+
+
+
+
+    let number = $state(1);
+    async function roll() {
+        const response = await fetch("http://localhost:8800/roll", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: "roll" })
+        });
+        //number = response.json(); //might have to await
+        const json = await response.json();
+        number = json.value;
+    }
+
+
+
     let formState = $state({
         answers: {},
         step: 0,
         error: "",
     });
+
 
     $inspect(formState.step);
 
@@ -63,6 +85,11 @@
 
 
 <Header name={formState.answers.name}/>
+<div>
+    <p>Roll some dice!</p>
+    <input type="button" id="roll" onclick={() => roll()}>
+    <p>Result: {number}</p>
+</div>
 
 <main>
     {#if formState.step >= QUESTIONS.length}
