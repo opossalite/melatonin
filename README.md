@@ -25,5 +25,7 @@ vim-compatible keys that will remain mostly hidden when using a mouse, like sear
     - will be able to exit vim mode by pressing esc but can enter it by pressing any vim key
     - figure out how to right click and play and such the songs, maybe enter for play and ctrl+y for right clicking?
 customizable color theme (everything will remain the same but this one color)
+press v to select or deselect a track, and shift+v selects all between last selected and currently hovering
+main color orange, and then vim mode a light teal?
 
 

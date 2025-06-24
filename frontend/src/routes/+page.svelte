@@ -1,16 +1,11 @@
 <script lang="ts">
     import { fly } from "svelte/transition";
-    import Header from "./Header.svelte";
-    import MainWindow from "./MainWindow.svelte";
-    import Footer from "./Footer.svelte";
+    import Header from "$lib/Header/Header.svelte";
+    import Footer from "$lib/Footer/Footer.svelte";
+    import MainWindow from "$lib/MainWindow.svelte";
 
 
-
-//<div id="wrapper">
-//    <Header name={"a"}/>
-//    <MainWindow></MainWindow>
-//    <Footer></Footer>
-//</div>
+    
 
 
 
@@ -43,20 +38,20 @@
 }
 
 #top {
-    height:50px;
+    height:60px;
     width:100%;
     background:grey;
 }
 #middle {
-    top:50px;
-    bottom:50px;
+    top:60px;
+    bottom:80px;
     width:100%;
     background:black;
     color:white;
 }
 #bottom {
     bottom:0;
-    height:50px;
+    height:80px;
     width:100%;
     background:grey;
 }

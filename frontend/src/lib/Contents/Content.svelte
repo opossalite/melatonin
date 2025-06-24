@@ -1,16 +1,13 @@
 <script lang="ts">
-    import LeftBar from "./LeftBar.svelte";
-    import {createState, NathanState} from "./state.svelte";
-
     let {name}: {name: string} = $props();
 
     const myState = createState();
     const myStateTwo = new NathanState();
+    import {createState, NathanState} from "./state.svelte";
 </script>
 
-
-<div id="main_window">
-    main window
+<div>
+    content
     <h1>
         {name ? name : "User"}'s Form
     </h1>
@@ -18,6 +15,3 @@
     <button onclick={() => myStateTwo.up()}>{myStateTwo.value}</button>
 </div>
 
-
-<style>
-</style>
