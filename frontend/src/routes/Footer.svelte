@@ -1,11 +1,9 @@
 <script lang="ts">
 </script>
 
-<div id="header">
-    reee header
+<div id="footer">
+    aaaaaaa footer
 </div>
 
 <style>
-
 </style>
-
