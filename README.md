@@ -7,7 +7,11 @@ in progress music player for linux
 - ideally a mobile app to control playback as well
 - will easily allow user to open the file manager to reorganize or rename files
 
+technologies:
 rust (rodio, rocket) + svelte + electron
+
+misc:
+lucide (icons)
 
 notes:
 `npm run dev` for react and svelte
