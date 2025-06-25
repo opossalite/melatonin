@@ -39,8 +39,8 @@
         </div>
     </div>
     <div id="track_details" class="group">
-        <Disc/>
-        <MicVocal/>
+        <Disc class="now_playing"/>
+        <MicVocal class="lyrics"/>
     </div>
 </div>
 
@@ -58,7 +58,6 @@
 .group {
     flex-direction: column;
     gap: 0.5rem;
-    background: red;
 }
 
 
@@ -99,6 +98,18 @@
 
 #track_details {
     margin-left: auto;
+}
+:global(.now_playing) {
+    color: white;
+}
+:global(.now_playing:hover) {
+    color: lightgrey;
+}
+:global(.lyrics) {
+    color: white;
+}
+:global(.lyrics:hover) {
+    color: lightgrey;
 }
 
 

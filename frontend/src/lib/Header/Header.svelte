@@ -1,19 +1,19 @@
 <script lang="ts">
-    import { ChevronLeft, ChevronRight, House, Search, ListMusic, Settings } from "lucide-svelte";
+    import { ChevronLeft, ChevronRight, House, Search, AlignJustify, Settings } from "lucide-svelte";
 </script>
 
 <div id="header">
     <div id="history" class="group">
-        <ChevronLeft/>
-        <ChevronRight/>
+        <ChevronLeft class="back"/>
+        <ChevronRight class="forward"/>
     </div>
     <div id="center_controls" class="group">
-        <House/>
-        <Search/>
-        <ListMusic/>
+        <House class="home"/>
+        <Search class="search_icon"/>
+        <AlignJustify class="playlist_view"/>
     </div>
     <div id="settings" class="group">
-        <Settings/>
+        <Settings class="settings_icon"/>
 
     </div>
 </div>
@@ -32,13 +32,24 @@
 .group {
     flex-direction: column;
     gap: 0.5rem;
-    background: red;
 }
 
 
 
 #history {
     margin-right: auto;
+}
+:global(.back) {
+    color: white;
+}
+:global(.back:hover) {
+    color: lightgrey;
+}
+:global(.forward) {
+    color: white;
+}
+:global(.forward:hover) {
+    color: lightgrey;
 }
 
 
@@ -48,10 +59,34 @@
     left: 50%;
     transform: translateX(-50%);
 }
+:global(.home) {
+    color: white;
+}
+:global(.home:hover) {
+    color: lightgrey;
+}
+:global(.search_icon) {
+    color: white;
+}
+:global(.search_icon:hover) {
+    color: lightgrey;
+}
+:global(.playlist_view) {
+    color: white;
+}
+:global(.playlist_view:hover) {
+    color: lightgrey;
+}
 
 
 
 #settings {
     align-items: flex-end;
+}
+:global(.settings_icon) {
+    color: white;
+}
+:global(.settings_icon:hover) {
+    color: lightgrey;
 }
 </style>

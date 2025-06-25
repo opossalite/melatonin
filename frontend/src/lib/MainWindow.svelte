@@ -1,6 +1,6 @@
 <script lang="ts">
     import LeftBar from "./LeftBar/LeftBar.svelte";
-    import Content from "./Contents/Content.svelte";
+    import Content from "./Content/Content.svelte";
 
     let barSize = 750;
 </script>
@@ -18,12 +18,8 @@
     height: 100%;
 }
 
-#left_bar {
-    background: lime;
-}
 
 #content {
     width: 100%;
-    background: teal;
 }
 </style>
