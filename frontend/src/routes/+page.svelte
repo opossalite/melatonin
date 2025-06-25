@@ -53,7 +53,6 @@
     bottom:0;
     height:80px;
     width:100%;
-    background:grey;
 }
 
 
