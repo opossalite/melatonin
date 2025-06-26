@@ -1,0 +1,35 @@
+types of http calls:
+
+last_played = returns the track info for the last played song, or will communicate that the file doesn't exist
+list_albums = returns all albums and tracks, including singles, in proper json
+search = client provides search string, server returns all results, including individual songs and albums
+artist_page = client provides artist string, server returns all details for the page
+play_pause = self explanatory
+seek_track = reposition timing within song to new point
+next_song = self explanatory
+previous_song = self explanatory
+get_lyrics = self explanatory, but will retrieve lyrics maybe from genius or something? will say if no internet access
+add_queue = add a particular track to the queue
+back (and forward) = rewind history or move ahead in history, client will make any repeat calls if needed for content
+get_settings = all current settings will be provided by the server
+set_settings = client will relay the new settings back to the server to store and take effect
+home = retrieve info for the home page
+
+
+
+further notes:
+showing the now playing view does not require an http request, as requesting the
+    current song and all the albums will give the client access to the cover art
+when the main page updates, or the location of a song is checked, update the album
+    view to reflect the current song being looked at (should happen when the content changes)
+opening an album (or singles, or queue) will not require an http request since we have that info
+
+
+
+
+
+
+
+
+
+
