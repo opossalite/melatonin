@@ -36,7 +36,7 @@ let rustBackend;
 
 app.whenReady().then(() => {
     // 🟢 Start the Rust backend binary
-    const binaryPath = path.join(__dirname, '../../backend/target/release/music-rust');
+    const binaryPath = path.join(__dirname, '../../backend/target/release/melatonin');
     rustBackend = spawn(binaryPath);
 
     rustBackend.stdout.on('data', (data) => {

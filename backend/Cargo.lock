@@ -683,6 +683,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "melatonin"
+version = "0.1.0"
+dependencies = [
+ "rand 0.9.1",
+ "rocket",
+ "rocket_cors",
+ "serde",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "memchr"
 version = "2.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -731,18 +743,6 @@ dependencies = [
  "tokio",
  "tokio-util",
  "version_check",
-]
-
-[[package]]
-name = "music-rust"
-version = "0.1.0"
-dependencies = [
- "rand 0.9.1",
- "rocket",
- "rocket_cors",
- "serde",
- "serde_json",
- "tokio",
 ]
 
 [[package]]

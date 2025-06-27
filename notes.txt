@@ -23,11 +23,15 @@ showing the now playing view does not require an http request, as requesting the
 when the main page updates, or the location of a song is checked, update the album
     view to reflect the current song being looked at (should happen when the content changes)
 opening an album (or singles, or queue) will not require an http request since we have that info
+REVAMP:
+anything that changes the content view must be called to the backend to update the history
 
 
 
 
 
+goals:
+remove the highlighting thing, don't let users do that
 
 
 
