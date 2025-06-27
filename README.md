@@ -1,4 +1,4 @@
-# music-player
+# Psilocybin
 in-progress music player for linux
 - playlist structure will be wholely determined by the file structure in storage with 0 in-app organization options
 - extremely simple interface focusing on the album art
