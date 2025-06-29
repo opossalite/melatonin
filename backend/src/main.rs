@@ -1,4 +1,5 @@
 mod history;
+mod albums;
 
 #[macro_use] extern crate rocket;
 use rocket::serde::json::Json;

@@ -1,6 +1,8 @@
 <script lang="ts">
     import LeftBar from "./LeftBar/LeftBar.svelte";
     import Content from "./Content/Content.svelte";
+    //import { AlbumState } from "./albums.svelte";
+    let {albums}: {albums: AlbumState} = $props();
 
     let barSize = 750;
 </script>

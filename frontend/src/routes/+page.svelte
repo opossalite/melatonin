@@ -3,8 +3,15 @@
     import Header from "$lib/Header/Header.svelte";
     import Footer from "$lib/Footer/Footer.svelte";
     import MainWindow from "$lib/MainWindow.svelte";
+    import { AlbumState }  from "$lib/albums.svelte.ts";
 
+    async function roll() {
+        const response = await fetch("http://localhost:8800/roll");
+        const json = await response.json();
+        //roll_result = json.value;
+    }
 
+    let albums = new AlbumState();
     
 
 
@@ -13,7 +20,7 @@
 
 <div id="wrapper">
     <div id="top"><Header name="a"/></div>
-    <div id="middle"><MainWindow/></div>
+    <div id="middle"><MainWindow {albums}/></div>
     <div id="bottom"><Footer/></div>
 </div>
 
@@ -55,14 +62,6 @@
     width:100%;
 }
 
-
-.error {
-    color: red;
-}
-
-.horiz {
-    display: inline-block;
-}
 </style>
 
 
