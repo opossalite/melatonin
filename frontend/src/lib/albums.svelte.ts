@@ -1,13 +1,15 @@
 // Songs are in the form of Artist - Album - Song
 //   and as such, albums are Artist - Album to ensure no duplicates
 
+interface Album {
+    artists: string[],
+    title: string,
+    songs: string[],
+}
+
 
 export class AlbumState {
-    dice_roll: number | "-" = $state("-");
-
-    uh() {
-        return 0;
-    }
+    public albums: Album[] = $state([]);
 }
 
 

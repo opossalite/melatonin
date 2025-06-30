@@ -1,17 +1,22 @@
 <script lang="ts">
-    import { fly } from "svelte/transition";
     import Header from "$lib/Header/Header.svelte";
     import Footer from "$lib/Footer/Footer.svelte";
     import MainWindow from "$lib/MainWindow.svelte";
-    import { AlbumState }  from "$lib/albums.svelte.ts";
+    import { onMount } from "svelte";
+    import { AlbumState } from "$lib/albums.svelte";
 
-    async function roll() {
-        const response = await fetch("http://localhost:8800/roll");
+
+
+    // establish one singular set of albums that will be maintained by the whole program
+    let albums = new AlbumState;
+    onMount(async () => {
+        const response = await fetch("http://localhost:8800/get_albums");
         const json = await response.json();
-        //roll_result = json.value;
-    }
 
-    let albums = new AlbumState();
+        for (var album of json.albums) {
+            albums.albums.push(album);
+        }
+    });
     
 
 
@@ -19,7 +24,7 @@
 </script>
 
 <div id="wrapper">
-    <div id="top"><Header name="a"/></div>
+    <div id="top"><Header/></div>
     <div id="middle"><MainWindow {albums}/></div>
     <div id="bottom"><Footer/></div>
 </div>
