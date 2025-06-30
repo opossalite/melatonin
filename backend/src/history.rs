@@ -2,14 +2,13 @@
 /// Contains all buffered data, so we don't have to regenerate anything in history.
 #[derive(Clone)]
 pub enum HistoryFrame {
-    Home,
-    Album(String),
-    Singles,
-    Queue,
-    Search,
-    ArtistPage,
-    NowPlaying,
-    Lyrics,
+    Home, //TODO
+    Album(Vec<String>, String), //for singles, artists is empty and name is "Singles"
+    Queue, //TODO
+    Search, //TODO
+    ArtistPage, //TODO
+    NowPlaying, //TODO
+    Lyrics, //TODO
 }
 
 pub struct History {

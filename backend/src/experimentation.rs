@@ -3,6 +3,7 @@ use rocket::serde::json::Json;
 use serde::{Deserialize, Serialize};
 
 
+
 #[derive(Debug, Deserialize)]
 pub struct UpperReq {
     word: String,
@@ -11,7 +12,8 @@ pub struct UpperReq {
 pub struct UpperRes {
     word_upper: String,
 }
-#[post("/upper", format = "json", data = "<msg>")]
+//#[post("/upper", format = "json", data = "<msg>")] //NOTE: the msg here ties it to the msg in the parameters
+#[post("/upper", data = "<msg>")] //NOTE: the msg here ties it to the msg in the parameters
 pub fn upper(msg: Json<UpperReq>) -> Json<UpperRes> {
     Json(UpperRes {word_upper: msg.into_inner().word.to_uppercase()})
 }

@@ -1,7 +1,11 @@
-use serde::Serialize;
+use crate::AppState;
+
+use rocket::serde::json::Json;
+use serde::{Deserialize, Serialize};
 
 
-#[derive(Serialize)]
+
+#[derive(Serialize, Debug, Clone)]
 pub struct Album {
     artists: Vec<String>, //generally just one artist but with flexibility for more
     title: String,
@@ -15,6 +19,17 @@ impl Album {
             songs: songs.iter().map(|x| String::from(*x)).collect(),
         }
     }
+}
+
+
+#[derive(Serialize)]
+pub struct GetAlbumsResponse {
+    albums: Vec<Album>,
+    
+}
+#[get("/get_albums", format = "json")]
+pub fn get_albums(state: &rocket::State<AppState>) -> Json<GetAlbumsResponse> {
+    Json(GetAlbumsResponse{albums: state.albums.clone()})
 }
 
 

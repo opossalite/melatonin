@@ -4,12 +4,16 @@
     import MainWindow from "$lib/MainWindow.svelte";
     import { onMount } from "svelte";
     import { AlbumState } from "$lib/albums.svelte";
+    import { Settings } from "$lib/settings.svelte";
 
 
 
     // establish one singular set of albums that will be maintained by the whole program
-    let albums = new AlbumState;
+    let settings: Settings;
+    let albums: AlbumState = new AlbumState;
     onMount(async () => {
+
+        // retrieve albums, using the settings from before
         const response = await fetch("http://localhost:8800/get_albums");
         const json = await response.json();
 
