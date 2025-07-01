@@ -6,8 +6,8 @@ use serde::Serialize;
 
 #[derive(Serialize, Debug)]
 pub struct Settings {
-    folders: Vec<String>,
-    main_color: (u8, u8, u8),
+    pub folders: Vec<String>,
+    pub main_color: (u8, u8, u8),
 }
 impl Settings {
     pub fn new_default() -> Self {

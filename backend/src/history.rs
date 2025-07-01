@@ -1,6 +1,6 @@
 
 /// Contains all buffered data, so we don't have to regenerate anything in history.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum HistoryFrame {
     Home, //TODO
     Album(Vec<String>, String), //for singles, artists is empty and name is "Singles"
@@ -11,11 +11,20 @@ pub enum HistoryFrame {
     Lyrics, //TODO
 }
 
+
+#[derive(Clone, Debug)]
 pub struct History {
     left_frames: Vec<HistoryFrame>, //back in history, currently on end of this vec
     right_frames: Vec<HistoryFrame>, //forward in history
 }
 impl History {
+    pub fn new() -> Self {
+        History {
+            left_frames: vec![],
+            right_frames: vec![],
+        }
+    }
+
     /// Returns the new frame (unless it errors), plus the sizes of both stacks.
     pub fn back(&mut self) -> Result<(HistoryFrame, usize, usize), (usize, usize)> {
         if self.left_frames.len() < 2 {
