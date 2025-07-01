@@ -20,16 +20,18 @@
 
 <style>
 #leftbar {
-    background: lime;
+    /*background: lime;*/
+    background: #121212;
     height: 100%;
 }
 
 .album-box {
-    border: 1px solid #ccc;
     padding: 1rem;
     margin: 0.5rem 0;
-    border-radius: 8px;
     background-color: #121212;
+}
+.album-box:hover {
+    background-color: #1f1f1f;
 }
 .album-title {
     color: #d78e1e;

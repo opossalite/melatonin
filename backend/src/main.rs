@@ -2,6 +2,7 @@ mod history;
 mod albums;
 mod experimentation;
 mod settings;
+mod common;
 
 use std::sync::{Arc, RwLock};
 

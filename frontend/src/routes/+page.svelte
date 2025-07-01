@@ -12,6 +12,7 @@
     let settings: Settings;
     let albums: AlbumState = new AlbumState;
     onMount(async () => {
+        // 
 
         // retrieve albums, using the settings from before
         const response = await fetch("http://localhost:8800/get_albums");

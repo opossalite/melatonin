@@ -1,3 +1,5 @@
+use std::sync::{Arc, RwLock};
+
 use crate::AppState;
 use rocket::serde::json::Json;
 use serde::Serialize;
@@ -33,7 +35,7 @@ pub struct GetSettingsResponse {
     
 }
 #[get("/get_settings", format = "json")]
-pub fn get_settings(state: &rocket::State<AppState>) -> Json<GetSettingsResponse> {
+pub fn get_settings(state: &rocket::State<Arc<RwLock<AppState>>>) -> Json<GetSettingsResponse> {
     Json(GetSettingsResponse {
         settings: Settings::new_default(),
     })
