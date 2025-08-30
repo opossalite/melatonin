@@ -12,9 +12,9 @@ import (
 
 type Track struct {
 	Title        string     `json:"title"`
-	Artists      []string `json:"artists"`
-	Album        string   `json:"album"`
-	AlbumArtists []string `json:"album_artists"`
+	Artists      []string   `json:"artists"`
+	Album        string     `json:"album"`
+	AlbumArtists []string   `json:"album_artists"`
 	Year         string     `json:"year"`
 	TrackNo      string     `json:"track_no"`
 	TrackCount   string     `json:"track_count"`
@@ -27,7 +27,7 @@ type AlbumsResponse struct {
 	Albums [][]Track `json:"albums"`
 }
 
-func getAlbums(w http.ResponseWriter, r *http.Request) {
+func getAlbums(writer http.ResponseWriter, request *http.Request) {
 	// Example data — replace with your real lookup.
 	albums := [][]Track{
 		{
@@ -69,20 +69,20 @@ func getAlbums(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(w).Encode(AlbumsResponse{Albums: albums})
+	writer.Header().Set("Content-Type", "application/json")
+	writer.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(writer).Encode(AlbumsResponse{Albums: albums})
 }
 
 func main() {
-	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	router := chi.NewRouter()
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.Logger)
+	router.Use(middleware.Recoverer)
 
 	// CORS for localhost dev (adjust as needed)
-	r.Use(cors.Handler(cors.Options{
+	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173", "http://localhost:8080"},
 		AllowedMethods:   []string{"GET", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Content-Type", "Origin"},
@@ -91,9 +91,9 @@ func main() {
 		MaxAge:           300,
 	}))
 
-	r.Get("/get_albums", getAlbums)
+	router.Get("/get_albums", getAlbums)
 
 	log.Println("listening on :8800")
-	log.Fatal(http.ListenAndServe(":8800", r))
+	log.Fatal(http.ListenAndServe(":8800", router))
 }
 
