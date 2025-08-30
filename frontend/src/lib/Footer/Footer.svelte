@@ -1,5 +1,8 @@
 <script lang="ts">
+    import type { ProgramState } from "$lib/structures.svelte";
     import { SkipBack, SkipForward, CirclePause, CirclePlay, MicVocal, Disc } from "lucide-svelte";
+
+    let {program_state}: {program_state: ProgramState} = $props();
 
     let isPlaying = $state(false); //if true, pause icon will show
     //note: play and pause seem to be size 24 by default

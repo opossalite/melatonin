@@ -1,18 +1,18 @@
 <script lang="ts">
-    import type { AlbumState } from "$lib/albums.svelte";
+    import type { ProgramState } from "$lib/structures.svelte";
     import { AudioLines } from "lucide-svelte";
 
-    let {albums}: {albums: AlbumState} = $props();
+    let {program_state}: {program_state: ProgramState} = $props();
 </script>
 
 <div id="leftbar">
     left bar
     <AudioLines/>
 
-    {#each albums.albums as album ((album.artists, album.title))}
+    {#each program_state.albums as album ((album[0].artists, album[0].title))}
         <div class="album-box">
-            <div class="album-title">{album.title}</div>
-            <div class="album-artists">{album.artists.join(", ")}</div>
+            <div class="album-title">{album[0].title}</div>
+            <div class="album-artists">{album[0].artists.join(", ")}</div>
         </div>
     {/each}
 </div>

@@ -3,14 +3,12 @@
     import Footer from "$lib/Footer/Footer.svelte";
     import MainWindow from "$lib/MainWindow.svelte";
     import { onMount } from "svelte";
-    import { AlbumState } from "$lib/albums.svelte";
-    import { Settings } from "$lib/settings.svelte";
+    import { ProgramState } from "$lib/structures.svelte";
 
 
 
     // establish one singular set of albums that will be maintained by the whole program
-    let settings: Settings;
-    let albums: AlbumState = new AlbumState;
+    let program_state: ProgramState = $state(new ProgramState);
     onMount(async () => {
         // 
 
@@ -18,9 +16,11 @@
         const response = await fetch("http://localhost:8800/get_albums");
         const json = await response.json();
 
-        for (var album of json.albums) {
-            albums.albums.push(album);
-        }
+        program_state.albums = json.albums;
+
+        //for (var album of albums) {
+        //    //program_state..push(album);
+        //}
     });
     
 
@@ -30,8 +30,8 @@
 
 <div id="wrapper">
     <div id="top"><Header/></div>
-    <div id="middle"><MainWindow {albums}/></div>
-    <div id="bottom"><Footer/></div>
+    <div id="middle"><MainWindow {program_state}/></div>
+    <div id="bottom"><Footer {program_state}/></div>
 </div>
 
 
