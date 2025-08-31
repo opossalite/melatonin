@@ -21,8 +21,8 @@
                 onclick={() => select(i)}
                 onkeydown={() => {}}
             >
-                <div class="album-title">{album[0].title}</div>
-                <div class="album-artists">{album[0].artists.join(", ")}</div>
+                <div class="album-title">{album[0].album}</div>
+                <div class="album-artists">{album[0].album_artists.join(", ")}</div>
             </div>
         {/each}
     </div>

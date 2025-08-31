@@ -34,7 +34,9 @@ export class ProgramState {
     public selected_album_index: number | null = $state(null);
 
     // program settings
-    public folders: string[] = []
+    public folders: string[] = [
+        "~/Music",
+    ]
 
     // colors
     public main_color: [number, number, number] = [215, 142, 30] //accent

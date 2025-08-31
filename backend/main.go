@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -10,71 +9,11 @@ import (
 	"github.com/go-chi/cors"
 )
 
-type Track struct {
-	Title        string     `json:"title"`
-	Artists      []string   `json:"artists"`
-	Album        string     `json:"album"`
-	AlbumArtists []string   `json:"album_artists"`
-	Year         string     `json:"year"`
-	TrackNo      string     `json:"track_no"`
-	TrackCount   string     `json:"track_count"`
-	CdNo         string     `json:"cd_no"`
-	CdCount      string     `json:"cd_count"`
-	// TODO: add cover
-}
 
-type AlbumsResponse struct {
-	Albums [][]Track `json:"albums"`
-}
-
-func getAlbums(writer http.ResponseWriter, request *http.Request) {
-	// Example data — replace with your real lookup.
-	albums := [][]Track{
-		{
-			{
-				Title:        "Song A",
-				Artists:      []string{"Artist One", "Feat Person"},
-				Album:        "Greatest Hits",
-				AlbumArtists: []string{"Artist One"},
-				Year:         "2024",
-				TrackNo:      "1",
-				TrackCount:   "10",
-				CdNo:         "1",
-				CdCount:      "1",
-			},
-			{
-				Title:        "Song B",
-				Artists:      []string{"Artist One"},
-				Album:        "Greatest Hits",
-				AlbumArtists: []string{"Artist One"},
-				Year:         "2024",
-				TrackNo:      "2",
-				TrackCount:   "10",
-				CdNo:         "1",
-				CdCount:      "1",
-			},
-		},
-		{
-			{
-				Title:        "Another Song",
-				Artists:      []string{"Different Band"},
-				Album:        "Live at Home",
-				AlbumArtists: []string{"Different Band"},
-				Year:         "2019",
-				TrackNo:      "1",
-				TrackCount:   "8",
-				CdNo:         "1",
-				CdCount:      "1",
-			},
-		},
-	}
-
-	writer.Header().Set("Content-Type", "application/json")
-	writer.WriteHeader(http.StatusOK)
-	_ = json.NewEncoder(writer).Encode(AlbumsResponse{Albums: albums})
-}
 
 func main() {
+
+	return
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
