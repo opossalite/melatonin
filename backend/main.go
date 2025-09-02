@@ -47,14 +47,14 @@ func expandAll(paths []string) []string {
 
 
 
-func contains(list []string, item string) bool {
-    for _, v := range list {
-        if v == item {
-            return true
-        }
-    }
-    return false
-}
+//func contains(list []string, item string) bool {
+//    for _, v := range list {
+//        if v == item {
+//            return true
+//        }
+//    }
+//    return false
+//}
 
 
 

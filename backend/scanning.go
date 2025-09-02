@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 
@@ -57,10 +58,6 @@ func dummyAlbums() [][]Track {
 
 //func readAlbums(folders []string) [][]Track {
 func readAlbums(folders []string, exclude_folders []string) {
-
-	//path := "./" // change this to the directory you want
-	//path = "~/Music"
-
 	frontier := expandAll(folders)
 	exclude := expandAll(exclude_folders)
 
@@ -76,7 +73,7 @@ func readAlbums(folders []string, exclude_folders []string) {
 
 		for _, entry := range entries {
 			fullPath := filepath.Join(path, entry.Name())
-			if contains(exclude, fullPath) {
+			if slices.Contains(exclude, fullPath) {
 				continue;
 			}
 
@@ -87,10 +84,7 @@ func readAlbums(folders []string, exclude_folders []string) {
 				fmt.Println("[FILE]", fullPath)
 			}
 		}
-		
 	}
-
-
 }
 
 
@@ -111,9 +105,9 @@ func getAlbums(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "invalid JSON: "+err.Error(), http.StatusBadRequest)
         return
     }
+
 	//albums := readAlbums(req.Folders)
 	albums := dummyAlbums()
-
 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(AlbumsResponse{Albums: albums})
