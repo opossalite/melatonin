@@ -20,10 +20,10 @@ type HistoryFrame struct {
     Type   HistoryType
 
     // only some of these will be filled depending on Type, specified below
-	Artist string //AlbumView, ArtistPage, NowPlaying, Lyrics
-	Album string //AlbumView, NowPlaying, Lyrics
-	Query string //Search
-	Track string //NowPlaying, Lyrics
+	Artist string `json:"artist,omitempty"` //AlbumView, ArtistPage, NowPlaying, Lyrics
+	Album string `json:"album,omitempty"` //AlbumView, NowPlaying, Lyrics
+	Query string `json:"query,omitempty"` //Search
+	Track string `json:"track,omitempty"` //NowPlaying, Lyrics
 }
 
 

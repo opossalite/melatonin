@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -11,9 +14,59 @@ import (
 
 
 
+
+func expandPath(path string) (string, error) {
+    if len(path) > 0 && path[0] == '~' {
+        home, err := os.UserHomeDir()
+        if err != nil {
+            return "", err
+        }
+        if path == "~" {
+            return home, nil
+        }
+        // replace "~" with the home directory
+        return filepath.Join(home, path[1:]), nil
+    }
+    return path, nil
+}
+
+
+
+func expandAll(paths []string) []string {
+    expanded := make([]string, len(paths))
+    for i, p := range paths {
+        e, err := expandPath(p)
+        if err != nil {
+            fmt.Println("Error expanding path:", p, err)
+            os.Exit(1) // terminate program
+        }
+        expanded[i] = e
+    }
+    return expanded
+}
+
+
+
+func contains(list []string, item string) bool {
+    for _, v := range list {
+        if v == item {
+            return true
+        }
+    }
+    return false
+}
+
+
+
+
 func main() {
 
+
+	readAlbums([]string{"~/Music"}, []string{"~/Music/,OLD"})
 	return
+
+
+
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
