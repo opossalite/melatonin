@@ -14,6 +14,18 @@ import (
 
 
 
+var PERMITTED_FILE_TYPES []string = []string{
+	"mp3",
+
+	"acc",
+	"m4a",
+	"alac",
+
+	"ogg",
+	"flac",
+}
+
+
 
 func expandPath(path string) (string, error) {
     if len(path) > 0 && path[0] == '~' {

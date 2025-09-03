@@ -7,6 +7,9 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
+
+	"github.com/dhowden/tag"
 )
 
 
@@ -61,6 +64,8 @@ func readAlbums(folders []string, exclude_folders []string) {
 	frontier := expandAll(folders)
 	exclude := expandAll(exclude_folders)
 
+	//albums := []Album{};
+
 	for len(frontier) > 0 {
 		path := frontier[len(frontier)-1]
 		frontier = frontier[:len(frontier)-1]
@@ -78,10 +83,36 @@ func readAlbums(folders []string, exclude_folders []string) {
 			}
 
 			if entry.IsDir() {
-				fmt.Println("[DIR ]", fullPath)
+				// append to frontier
+				//fmt.Println("[DIR ]", fullPath)
 				frontier = append(frontier, fullPath)
 			} else {
-				fmt.Println("[FILE]", fullPath)
+				// read tags
+				//fmt.Println("[FILE]", fullPath)
+
+				// filter out irrelevant files
+				loc := strings.LastIndex(entry.Name(), ".")
+				extension := entry.Name()[loc+1:]
+				//fmt.Println(extension)
+				if !slices.Contains(PERMITTED_FILE_TYPES, extension) {
+					continue; //skip over irrelevant files
+				}
+
+				fmt.Println("Attempting to read: ", fullPath)
+				
+				f, err := os.Open(fullPath)
+				if err != nil { //safe probably
+					return
+				}
+				defer f.Close()
+
+				metadata, err := tag.ReadFrom(f)
+				if err != nil {
+					fmt.Println("Error when reading tags")
+					return
+				}
+
+				fmt.Println("Title: ", metadata.Title())
 			}
 		}
 	}

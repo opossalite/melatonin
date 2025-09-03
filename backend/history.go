@@ -11,15 +11,16 @@ const (
 	Search //search results
 	NowPlaying //album art or whatever other content for now playing
 	Lyrics //lyrics sourced from internet
+	Settings //settings
 )
 
 
 
 // Contains the information required to display content on the main content section
 type HistoryFrame struct {
-    Type   HistoryType
+	Type   HistoryType
 
-    // only some of these will be filled depending on Type, specified below
+	// only some of these will be filled depending on Type, specified below
 	Artist string `json:"artist,omitempty"` //AlbumView, ArtistPage, NowPlaying, Lyrics
 	Album string `json:"album,omitempty"` //AlbumView, NowPlaying, Lyrics
 	Query string `json:"query,omitempty"` //Search
