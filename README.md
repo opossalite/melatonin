@@ -31,5 +31,6 @@ lucide (icons)
     - press v to select or deselect a track, and shift+v selects all between last selected and currently hovering
 - customizable color theme (everything will remain the same but this one color)
 - main color orange, and then vim mode a light teal?
+- use dates instead of years (which includes year, month, day)
 
 

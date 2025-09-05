@@ -7,11 +7,11 @@ type Track struct {
 	Artists      []string   `json:"artists"`
 	Album        string     `json:"album"`
 	AlbumArtists []string   `json:"album_artists"`
-	Year         string     `json:"year"`
-	TrackNo      string     `json:"track_no"`
-	TrackCount   string     `json:"track_count"`
-	CdNo         string     `json:"cd_no"`
-	CdCount      string     `json:"cd_count"`
+	Year         uint     `json:"year"`
+	TrackNo      uint     `json:"track_no"`
+	TrackCount   uint     `json:"track_count"`
+	CdNo         uint     `json:"cd_no"`
+	CdCount      uint     `json:"cd_count"`
 	// TODO: add cover
 }
 
