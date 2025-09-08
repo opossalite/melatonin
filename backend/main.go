@@ -74,9 +74,8 @@ func expandAll(paths []string) []string {
 
 
 func main() {
-
-
-	readAlbums([]string{"~/Music"}, []string{"~/Music/,OLD"})
+	// note, this returns a list of tracks
+	readTracks([]string{"~/Music"}, []string{"~/Music/,OLD"})
 	return
 
 

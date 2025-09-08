@@ -65,7 +65,7 @@ func dummyAlbums() [][]Track {
 
 
 // Run ffprobe in the command line for a given file path and return a Track
-func FFProbeTags(ctx context.Context, path string) (Track, error) {
+func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
     if _, ok := ctx.Deadline(); !ok {
         var cancel context.CancelFunc
         ctx, cancel = context.WithTimeout(ctx, 10*time.Second)
@@ -113,36 +113,36 @@ func FFProbeTags(ctx context.Context, path string) (Track, error) {
 			continue
 		}
 
-		if strings.HasPrefix(lineLower, "album_artist") {
+		if !solo && strings.HasPrefix(lineLower, "album_artist") {
 			loc := strings.Index(line, ":")
 			substr := line[loc+2:] //contains multiple artists possibly
 			track.AlbumArtists = strings.Split(substr, ";")
 			continue
 		}
 
-		if strings.HasPrefix(lineLower, "album") {
+		if !solo && strings.HasPrefix(lineLower, "album") {
 			loc := strings.Index(line, ":")
 			track.Album = line[loc+2:]
 			continue
 		}
 
-		if strings.HasPrefix(lineLower, "disctotal") {
+		if !solo && strings.HasPrefix(lineLower, "disctotal") {
 			loc := strings.Index(line, ":")
 			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
 			if err != nil {
-				fmt.Println(err)
-				continue
+				//return Track{}, errors.Join(errors.New("TAG DISCTOTAL, "), err)
+				return Track{}, fmt.Errorf("[TAG: DISCTOTAL] %w", err)
 			}
 			track.CdCount = uint(num)
 			continue
 		}
 
-		if strings.HasPrefix(lineLower, "disc") {
+		if !solo && strings.HasPrefix(lineLower, "disc") {
 			loc := strings.Index(line, ":")
 			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
 			if err != nil {
-				fmt.Println(err)
-				continue
+				//return Track{}, errors.Join(errors.New("TAG DISC, "), err)
+				return Track{}, fmt.Errorf("[TAG: DISC] %w", err)
 			}
 			track.CdNo = uint(num)
 			continue
@@ -153,30 +153,30 @@ func FFProbeTags(ctx context.Context, path string) (Track, error) {
 			loc := strings.Index(line, ":")
 			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
 			if err != nil {
-				fmt.Println(err)
-				continue
+				//return Track{}, errors.Join(errors.New("TAG DATE, "), err)
+				return Track{}, fmt.Errorf("[TAG: DATE] %w", err)
 			}
 			track.Year = uint(num)
 			continue
 		}
 
-		if strings.HasPrefix(lineLower, "tracktotal") {
+		if !solo && strings.HasPrefix(lineLower, "tracktotal") {
 			loc := strings.Index(line, ":")
 			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
 			if err != nil {
-				fmt.Println(err)
-				continue
+				//return Track{}, errors.Join(errors.New("TAG TRACKTOTAL, "), err)
+				return Track{}, fmt.Errorf("[TAG: TRACKTOTAL] %w", err)
 			}
 			track.TrackCount = uint(num)
 			continue
 		}
 
-		if strings.HasPrefix(lineLower, "track") {
+		if !solo && strings.HasPrefix(lineLower, "track") {
 			loc := strings.Index(line, ":")
 			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
 			if err != nil {
-				fmt.Println(err)
-				continue
+				//return Track{}, errors.Join(errors.New("TAG TRACK, "), err)
+				return Track{}, fmt.Errorf("[TAG: TRACK] %w", err)
 			}
 			track.TrackNo = uint(num)
 			continue
@@ -186,13 +186,20 @@ func FFProbeTags(ctx context.Context, path string) (Track, error) {
         return Track{}, err
     }
 
+	track.Path = path //add the path now
+	if solo {
+		track.Album = "SOLO"
+		track.AlbumArtists = []string{"SOLO"}
+	}
+
     return track, nil
 }
 
 
 
 //func readAlbums(folders []string) [][]Track {
-func readAlbums(folders []string, exclude_folders []string) {
+func readTracks(folders []string, exclude_folders []string) []Track {
+	fmt.Println("Reading local files...")
 	frontier := expandAll(folders)
 	exclude := expandAll(exclude_folders)
 
@@ -208,13 +215,20 @@ func readAlbums(folders []string, exclude_folders []string) {
 		entries, err := os.ReadDir(path)
 		if err != nil {
 			fmt.Println("Error:", err)
-			return
+			return []Track{}
 		}
 
 		for _, entry := range entries {
 			fullPath := filepath.Join(path, entry.Name())
 			if slices.Contains(exclude, fullPath) {
 				continue;
+			}
+
+			var solo bool
+			if strings.Index(strings.ToLower(path), ",solos/") > 0 {
+				solo = true
+			} else {
+				solo = false
 			}
 
 			if entry.IsDir() { //append to frontier
@@ -228,24 +242,59 @@ func readAlbums(folders []string, exclude_folders []string) {
 					continue; //skip over irrelevant files
 				}
 
-				//fmt.Println("Attempting to read: ", fullPath)
-
-				track, err := FFProbeTags(ctx, fullPath)
+				track, err := FFProbeTags(ctx, fullPath, solo)
 				if err != nil {
+					fmt.Println("FAILED TO READ:", fullPath, "-----", err)
 					failed = append(failed, fullPath)
 					continue
 				}
 
-				tracks = append(tracks, track)
+				// now just ensure we have all the tags we need
+				conditions := []bool{
+					track.Title == "",
+					track.Artists == nil,
+					track.Year == 0,
+					!solo && track.Album == "",
+					!solo && track.AlbumArtists == nil,
+					!solo && track.TrackNo == 0,
+					!solo && track.TrackCount == 0,
+					!solo && track.CdNo == 0,
+					!solo && track.CdCount == 0,
+				}
+				messages := []string{
+					"Title",
+					"Artist",
+					"Year",
+					"Album",
+					"Album_Artists",
+					"Track",
+					"TrackTotal",
+					"Disc",
+					"DiscTotal",
+				}
 
-				//fmt.Println("Title: ", track.Title)
-				//fmt.Println("Artists: ", track.Artists)
+				is_missing_tags := false
+				for i := range len(conditions) {
+					if conditions[i] {
+						is_missing_tags = true
+						fmt.Printf("ERROR: MISSING TAG '%s' for '%s'\n", messages[i], fullPath)
+					}
+				}
+				if is_missing_tags {
+					continue
+				}
+
+				tracks = append(tracks, track)
 			}
 		}
 	}
 
 	// now we have all the tracks in a single list
-	fmt.Println(tracks)
+	//for i := 0; i < len(tracks); i++ {
+	//	fmt.Println(tracks[i])
+
+	//}
+	return tracks
 }
 
 

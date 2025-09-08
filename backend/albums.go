@@ -13,6 +13,7 @@ type Track struct {
 	CdNo         uint     `json:"cd_no"`
 	CdCount      uint     `json:"cd_count"`
 	// TODO: add cover
+	Path		 string     `json:"path"`
 }
 
 
