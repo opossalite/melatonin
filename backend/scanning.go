@@ -28,10 +28,10 @@ func dummyAlbums() [][]Track {
 				Album:        "Greatest Hits",
 				AlbumArtists: []string{"Artist One"},
 				Year:         2024,
-				TrackNo:      1,
-				TrackCount:   10,
-				CdNo:         1,
-				CdCount:      1,
+				Track:    	  1,
+				TrackTotal:   10,
+				Disc:         1,
+				DiscTotal:      1,
 			},
 			{
 				Title:        "Song B",
@@ -39,10 +39,10 @@ func dummyAlbums() [][]Track {
 				Album:        "Greatest Hits",
 				AlbumArtists: []string{"Artist One"},
 				Year:         2024,
-				TrackNo:      2,
-				TrackCount:   10,
-				CdNo:         1,
-				CdCount:      1,
+				Track:      	2,
+				TrackTotal:   10,
+				Disc:         1,
+				DiscTotal:      1,
 			},
 		},
 		{
@@ -52,10 +52,10 @@ func dummyAlbums() [][]Track {
 				Album:        "Live at Home",
 				AlbumArtists: []string{"Different Band"},
 				Year:         2019,
-				TrackNo:      1,
-				TrackCount:   8,
-				CdNo:         1,
-				CdCount:      1,
+				Track:      	1,
+				TrackTotal:   8,
+				Disc:         1,
+				DiscTotal:      1,
 			},
 		},
 	};
@@ -72,8 +72,16 @@ func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
         defer cancel()
     }
 
-    // ask ffprobe to show its normal human-readable block (to stderr)
-    cmd := exec.CommandContext(ctx, "ffprobe", "-hide_banner", path)
+	show := "format=duration,bit_rate:" +
+        "format_tags=title,artist,album,album_artist,date,track,tracktotal,disc,disctotal"
+
+    cmd := exec.CommandContext(
+        ctx, "ffprobe",
+        "-v", "error",
+        "-of", "default=nw=1:nk=0", // no wrappers, show keys
+        "-show_entries", show,
+        path,
+    )
 
 	// set up an stdout and an stderr
     var stdout, stderr bytes.Buffer
@@ -81,7 +89,7 @@ func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
     cmd.Stderr = &stderr
 
     if err := cmd.Run(); err != nil {
-        // If ffprobe printed something, surface it in the error
+        // if ffprobe printed something, surface it in the error
         msg := strings.TrimSpace(stderr.String())
         if msg == "" {
             msg = err.Error()
@@ -89,99 +97,92 @@ func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
         return Track{}, errors.New("ffprobe: " + msg)
     }
 
-    sc := bufio.NewScanner(bytes.NewReader(stderr.Bytes()))
+    sc := bufio.NewScanner(bytes.NewReader(stdout.Bytes()))
 	var track Track
     for sc.Scan() {
 
 		// set up a pipeline to extract valuable info
-        line := strings.TrimSpace(sc.Text())
-		lineLower := strings.ToLower(line)
+        line := strings.ToLower(strings.TrimSpace(sc.Text()))
         if line == "" {
 			continue
         }
+		loc := strings.Index(line, "=")
+		key := line[:loc]
+		value := line[loc+1:]
 
-		if strings.HasPrefix(lineLower, "title") {
-			loc := strings.Index(line, ":")
-			track.Title = line[loc+2:]
-			continue
-		}
+		//fmt.Println("key: ", key)
+		//fmt.Println("value: ", value)
 
-		if strings.HasPrefix(lineLower, "artist") {
-			loc := strings.Index(line, ":")
-			substr := line[loc+2:] //contains multiple artists possibly
-			track.Artists = strings.Split(substr, ";")
-			continue
-		}
-
-		if !solo && strings.HasPrefix(lineLower, "album_artist") {
-			loc := strings.Index(line, ":")
-			substr := line[loc+2:] //contains multiple artists possibly
-			track.AlbumArtists = strings.Split(substr, ";")
-			continue
-		}
-
-		if !solo && strings.HasPrefix(lineLower, "album") {
-			loc := strings.Index(line, ":")
-			track.Album = line[loc+2:]
-			continue
-		}
-
-		if !solo && strings.HasPrefix(lineLower, "disctotal") {
-			loc := strings.Index(line, ":")
-			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
+		switch key {
+		case "duration": //no way this breaks
+			num, err := strconv.ParseFloat(value, 64)
 			if err != nil {
-				//return Track{}, errors.Join(errors.New("TAG DISCTOTAL, "), err)
-				return Track{}, fmt.Errorf("[TAG: DISCTOTAL] %w", err)
+				return Track{}, fmt.Errorf("[TAG: Duration] %w", err)
 			}
-			track.CdCount = uint(num)
-			continue
-		}
+			track.Duration = num
 
-		if !solo && strings.HasPrefix(lineLower, "disc") {
-			loc := strings.Index(line, ":")
-			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
+		case "bit_rate": //no way this breaks
+			num, err := strconv.ParseUint(value, 10, 64)
 			if err != nil {
-				//return Track{}, errors.Join(errors.New("TAG DISC, "), err)
-				return Track{}, fmt.Errorf("[TAG: DISC] %w", err)
+				return Track{}, fmt.Errorf("[TAG: Bitrate] %w", err)
 			}
-			track.CdNo = uint(num)
-			continue
-		}
+			track.Bitrate = num
 
+		case "tag:title":
+			track.Title = value
 
-		if strings.HasPrefix(lineLower, "date") {
-			loc := strings.Index(line, ":")
-			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
+		case "tag:artist":
+			track.Artists = strings.Split(value, ";")
+
+		case "tag:album":
+			if solo { continue }
+			track.Album = value
+
+		case "tag:album_artist":
+			if solo { continue }
+			track.AlbumArtists = strings.Split(value, ";")
+
+		case "tag:date":
+			num, err := strconv.ParseUint(value, 10, 64)
 			if err != nil {
-				//return Track{}, errors.Join(errors.New("TAG DATE, "), err)
-				return Track{}, fmt.Errorf("[TAG: DATE] %w", err)
+				return Track{}, fmt.Errorf("[TAG: Date] %w", err)
 			}
-			track.Year = uint(num)
-			continue
-		}
+			track.Year = num
 
-		if !solo && strings.HasPrefix(lineLower, "tracktotal") {
-			loc := strings.Index(line, ":")
-			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
+		case "tag:track":
+			if solo { continue }
+			num, err := strconv.ParseUint(value, 10, 64)
 			if err != nil {
-				//return Track{}, errors.Join(errors.New("TAG TRACKTOTAL, "), err)
-				return Track{}, fmt.Errorf("[TAG: TRACKTOTAL] %w", err)
+				return Track{}, fmt.Errorf("[TAG: Track] %w", err)
 			}
-			track.TrackCount = uint(num)
-			continue
-		}
+			track.Track = num
 
-		if !solo && strings.HasPrefix(lineLower, "track") {
-			loc := strings.Index(line, ":")
-			num, err := strconv.ParseUint(line[loc+2:], 10, 32)
+		case "tag:tracktotal":
+			if solo { continue }
+			num, err := strconv.ParseUint(value, 10, 64)
 			if err != nil {
-				//return Track{}, errors.Join(errors.New("TAG TRACK, "), err)
-				return Track{}, fmt.Errorf("[TAG: TRACK] %w", err)
+				return Track{}, fmt.Errorf("[TAG: TrackTotal] %w", err)
 			}
-			track.TrackNo = uint(num)
-			continue
+			track.TrackTotal = num
+
+		case "tag:disc":
+			if solo { continue }
+			num, err := strconv.ParseUint(value, 10, 64)
+			if err != nil {
+				return Track{}, fmt.Errorf("[TAG: Disc] %w", err)
+			}
+			track.Disc = num
+
+		case "tag:disctotal":
+			if solo { continue }
+			num, err := strconv.ParseUint(value, 10, 64)
+			if err != nil {
+				return Track{}, fmt.Errorf("[TAG: DiscTotal] %w", err)
+			}
+			track.DiscTotal = num
 		}
-    }
+	}
+
     if err := sc.Err(); err != nil {
         return Track{}, err
     }
@@ -194,6 +195,7 @@ func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
 
     return track, nil
 }
+
 
 
 
@@ -256,10 +258,10 @@ func readTracks(folders []string, exclude_folders []string) []Track {
 					track.Year == 0,
 					!solo && track.Album == "",
 					!solo && track.AlbumArtists == nil,
-					!solo && track.TrackNo == 0,
-					!solo && track.TrackCount == 0,
-					!solo && track.CdNo == 0,
-					!solo && track.CdCount == 0,
+					!solo && track.Track == 0,
+					!solo && track.TrackTotal == 0,
+					!solo && track.Disc == 0,
+					!solo && track.DiscTotal == 0,
 				}
 				messages := []string{
 					"Title",
