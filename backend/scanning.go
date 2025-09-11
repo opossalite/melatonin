@@ -112,9 +112,6 @@ func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
 		key := line[:loc]
 		value := line[loc+1:]
 
-		//fmt.Println("key: ", key)
-		//fmt.Println("value: ", value)
-
 		switch key {
 		case "duration": //no way this breaks
 			num, err := strconv.ParseFloat(value, 64)
@@ -195,18 +192,8 @@ func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
 		track.AlbumArtists = []string{"SOLO"}
 	}
 
-	//fmt.Println("ALBUM NAME:")
-	//fmt.Println(track.AlbumArtists, track.Album)
-	//if track.Album == "ice queen" {
-	//	fmt.Println("ICE QUEEN")
-	//	fmt.Println(solo)
-	//	fmt.Println(track.Path)
-	//	fmt.Println(strings.Contains(strings.ToLower(track.Path), ",solos/"))
-	//}
-
     return track, nil
 }
-
 
 
 
@@ -216,7 +203,6 @@ func readTracks(folders []string, exclude_folders []string) []Track {
 	exclude := expandAll(exclude_folders)
 
 	tracks := []Track{} //will be sorted later
-	//failed := []string{}
 	mu := sync.Mutex{}
 
 	ctx := context.Background() //for commandline use
@@ -266,7 +252,6 @@ func readTracks(folders []string, exclude_folders []string) []Track {
 					track, err := FFProbeTags(ctx, fullPath, solo)
 					if err != nil {
 						fmt.Println("FAILED TO READ:", fullPath, "-----", err)
-						//failed = append(failed, fullPath)
 						return
 					}
 
@@ -329,14 +314,13 @@ type AlbumConstructor struct {
 	Year uint64
 	Tracks []Track
 }
-// Sort a list of tracks into a list of albums
+// sort a list of tracks into a list of albums
 func sortTracks(tracks []Track) ([]Album) {
 
 	// first create albums and assign tracks to them
 	album_c_map := make(map[AlbumKey]*AlbumConstructor)
 	
 	for i := range len(tracks) {
-		//artists := tracks[i].AlbumArtists
 		track := tracks[i]
 		artists := make([]string, 0, len(track.AlbumArtists))
 		copy(artists, track.AlbumArtists)
@@ -351,7 +335,6 @@ func sortTracks(tracks []Track) ([]Album) {
 				Title: track.Album,
 				Year: 0,
 				Tracks: []Track{track},
-
 			}
 			album_c_map[key] = album
 		} else {
@@ -365,18 +348,9 @@ func sortTracks(tracks []Track) ([]Album) {
 		album_cs = append(album_cs, album_c)
 	}
 
-	//for _, x := range album_cs {
-	//	fmt.Println(*x)
-	//}
-	//fmt.Println("ugh")
-
 	// iterate through all albums, processing their discs and tracks
 	album_collection := []Album{}
 	for _, album_c := range album_cs {
-		//fmt.Println("NOW PROCESSING:")
-		//fmt.Println(album_c)
-		//fmt.Println("UGH")
-
 		tracks := album_c.Tracks
 
 		// handle solos differently, without much processing at all
@@ -401,10 +375,6 @@ func sortTracks(tracks []Track) ([]Album) {
 		sort.SliceStable(tracks, func(i, j int) bool {
 			return tracks[i].Disc < tracks[j].Disc
 		})
-
-		//fmt.Println("AFTER SORTING")
-		//fmt.Println(album_c)
-		//fmt.Println("URGH")
 
 		// establish a disc map and place the tracks into the right disc
 		disc_map := map[uint64]*Disc{}
@@ -492,7 +462,7 @@ type AlbumsRequest struct {
     Folders []string `json:"folders"`
 }
 type AlbumsResponse struct {
-	Albums [][]Track `json:"albums"`
+	Albums []Album `json:"albums"`
 }
 func getAlbums(w http.ResponseWriter, r *http.Request) {
     defer r.Body.Close()
@@ -505,9 +475,8 @@ func getAlbums(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-	//albums := readAlbums(req.Folders)
-	albums := dummyAlbums()
-
+	albums := sortTracks(readTracks([]string{"~/Music"}, []string{"~/Music/,OLD"}))
+ 
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(AlbumsResponse{Albums: albums})
 }

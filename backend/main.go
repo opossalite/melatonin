@@ -63,11 +63,9 @@ func expandAll(paths []string) []string {
 
 func main() {
 	// note, this returns a list of tracks
-	a := sortTracks(readTracks([]string{"~/Music"}, []string{"~/Music/,OLD"}))
-	fmt.Println(a)
-	return
-
-
+	//a := sortTracks(readTracks([]string{"~/Music"}, []string{"~/Music/,OLD"}))
+	//fmt.Println(a)
+	//return
 
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
