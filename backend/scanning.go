@@ -14,6 +14,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -205,10 +206,13 @@ func readTracks(folders []string, exclude_folders []string) []Track {
 	frontier := expandAll(folders)
 	exclude := expandAll(exclude_folders)
 
-	tracks := []Track{}; //will be sorted later
-	failed := []string{}
+	tracks := []Track{} //will be sorted later
+	mu := sync.Mutex{}
+	//failed := []string{}
 
 	ctx := context.Background() //for commandline use
+
+	wg := sync.WaitGroup{}
 
 	for len(frontier) > 0 {
 		path := frontier[len(frontier)-1]
@@ -235,67 +239,73 @@ func readTracks(folders []string, exclude_folders []string) []Track {
 
 			if entry.IsDir() { //append to frontier
 				frontier = append(frontier, fullPath)
-			} else { //read tags
+			} else { //read tags concurrently
 
-				// filter out irrelevant files
-				loc := strings.LastIndex(entry.Name(), ".")
-				extension := entry.Name()[loc+1:]
-				if !slices.Contains(PERMITTED_FILE_TYPES, extension) {
-					continue; //skip over irrelevant files
-				}
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
 
-				track, err := FFProbeTags(ctx, fullPath, solo)
-				if err != nil {
-					fmt.Println("FAILED TO READ:", fullPath, "-----", err)
-					failed = append(failed, fullPath)
-					continue
-				}
-
-				// now just ensure we have all the tags we need
-				conditions := []bool{
-					track.Title == "",
-					track.Artists == nil,
-					track.Year == 0,
-					!solo && track.Album == "",
-					!solo && track.AlbumArtists == nil,
-					!solo && track.Track == 0,
-					!solo && track.TrackTotal == 0,
-					!solo && track.Disc == 0,
-					!solo && track.DiscTotal == 0,
-				}
-				messages := []string{
-					"Title",
-					"Artist",
-					"Year",
-					"Album",
-					"Album_Artists",
-					"Track",
-					"TrackTotal",
-					"Disc",
-					"DiscTotal",
-				}
-
-				is_missing_tags := false
-				for i := range len(conditions) {
-					if conditions[i] {
-						is_missing_tags = true
-						fmt.Printf("ERROR: MISSING TAG '%s' for '%s'\n", messages[i], fullPath)
+					// filter out irrelevant files
+					loc := strings.LastIndex(entry.Name(), ".")
+					extension := entry.Name()[loc+1:]
+					if !slices.Contains(PERMITTED_FILE_TYPES, extension) {
+						return; //skip over irrelevant files
 					}
-				}
-				if is_missing_tags {
-					continue
-				}
 
-				tracks = append(tracks, track)
+					track, err := FFProbeTags(ctx, fullPath, solo)
+					if err != nil {
+						fmt.Println("FAILED TO READ:", fullPath, "-----", err)
+						//failed = append(failed, fullPath)
+						return
+					}
+
+					// now just ensure we have all the tags we need
+					conditions := []bool{
+						track.Title == "",
+						track.Artists == nil,
+						track.Year == 0,
+						!solo && track.Album == "",
+						!solo && track.AlbumArtists == nil,
+						!solo && track.Track == 0,
+						!solo && track.TrackTotal == 0,
+						!solo && track.Disc == 0,
+						!solo && track.DiscTotal == 0,
+					}
+					messages := []string{
+						"Title",
+						"Artist",
+						"Year",
+						"Album",
+						"Album_Artists",
+						"Track",
+						"TrackTotal",
+						"Disc",
+						"DiscTotal",
+					}
+
+					is_missing_tags := false
+					for i := range len(conditions) {
+						if conditions[i] {
+							is_missing_tags = true
+							fmt.Printf("ERROR: MISSING TAG '%s' for '%s'\n", messages[i], fullPath)
+						}
+					}
+					if is_missing_tags {
+						return
+					}
+
+					mu.Lock()
+					tracks = append(tracks, track)
+					mu.Unlock()
+				}()
 			}
 		}
 	}
 
-	// now we have all the tracks in a single list
-	//for i := 0; i < len(tracks); i++ {
-	//	fmt.Println(tracks[i])
+	wg.Wait()
 
-	//}
+	//fmt.Println(tracks)
+
 	return tracks
 }
 
