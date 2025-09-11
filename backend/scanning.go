@@ -195,6 +195,15 @@ func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
 		track.AlbumArtists = []string{"SOLO"}
 	}
 
+	//fmt.Println("ALBUM NAME:")
+	//fmt.Println(track.AlbumArtists, track.Album)
+	//if track.Album == "ice queen" {
+	//	fmt.Println("ICE QUEEN")
+	//	fmt.Println(solo)
+	//	fmt.Println(track.Path)
+	//	fmt.Println(strings.Contains(strings.ToLower(track.Path), ",solos/"))
+	//}
+
     return track, nil
 }
 
@@ -230,12 +239,6 @@ func readTracks(folders []string, exclude_folders []string) []Track {
 				continue;
 			}
 
-			var solo bool
-			if strings.Index(strings.ToLower(path), ",solos/") > 0 {
-				solo = true
-			} else {
-				solo = false
-			}
 
 			if entry.IsDir() { //append to frontier
 				frontier = append(frontier, fullPath)
@@ -250,6 +253,14 @@ func readTracks(folders []string, exclude_folders []string) []Track {
 					extension := entry.Name()[loc+1:]
 					if !slices.Contains(PERMITTED_FILE_TYPES, extension) {
 						return; //skip over irrelevant files
+					}
+
+					// establish solo variable
+					var solo bool
+					if strings.Contains(strings.ToLower(fullPath), ",solos/") {
+						solo = true
+					} else {
+						solo = false
 					}
 
 					track, err := FFProbeTags(ctx, fullPath, solo)
@@ -312,11 +323,17 @@ type AlbumKey struct {
 	ArtistsConcat string
 	Album string
 }
+type AlbumConstructor struct {
+	Artists []string
+	Title string
+	Year uint64
+	Tracks []Track
+}
 // Sort a list of tracks into a list of albums
-func sortTracks(tracks []Track) []Album {
+func sortTracks(tracks []Track) ([]Album) {
 
 	// first create albums and assign tracks to them
-	album_map := make(map[AlbumKey]*Album)
+	album_c_map := make(map[AlbumKey]*AlbumConstructor)
 	
 	for i := range len(tracks) {
 		//artists := tracks[i].AlbumArtists
@@ -327,78 +344,143 @@ func sortTracks(tracks []Track) []Album {
 		artists_concat := strings.Join(artists, ";")
 		key := AlbumKey {artists_concat, track.Album}
 
-		album, ok := album_map[key]
+		album, ok := album_c_map[key]
 		if !ok {
-			album = &Album{
+			album = &AlbumConstructor{
 				Artists: track.AlbumArtists,
 				Title: track.Album,
-				Tracks: []Track{track},
 				Year: 0,
+				Tracks: []Track{track},
 
 			}
-			album_map[key] = album
+			album_c_map[key] = album
 		} else {
 			album.Tracks = append(album.Tracks, track)
 		}
 	}
 
-	// extract the albums from the map into a list instead
-	albums := make([]*Album, 0, len(album_map))
-	for _, album := range album_map {
-		albums = append(albums, album)
+	// extract the album constructors from the map into a list instead
+	album_cs := make([]*AlbumConstructor, 0, len(album_c_map))
+	for _, album_c := range album_c_map {
+		album_cs = append(album_cs, album_c)
 	}
 
-	cleansed_albums := make([]Album, 0, len(albums)) //best case scenario capacity
+	//for _, x := range album_cs {
+	//	fmt.Println(*x)
+	//}
+	//fmt.Println("ugh")
 
-	// now we want to sort the tracks by track then disc numbers
-	for _, album := range albums {
-		sort.Slice(tracks, func(i, j int) bool { //sort by track
+	// iterate through all albums, processing their discs and tracks
+	album_collection := []Album{}
+	for _, album_c := range album_cs {
+		//fmt.Println("NOW PROCESSING:")
+		//fmt.Println(album_c)
+		//fmt.Println("UGH")
+
+		tracks := album_c.Tracks
+
+		// handle solos differently, without much processing at all
+		if album_c.Title == "SOLO" && slices.Equal(album_c.Artists, []string{"SOLO"}) {
+			new_album := Album{
+				Artists: album_c.Artists,
+				Title: album_c.Title,
+				Year: album_c.Year,
+				Discs: []Disc{Disc{Tracks: album_c.Tracks}},
+			}
+			album_collection = append(album_collection, new_album)
+			continue
+		}
+
+		// used throughout this loop
+		passed := true
+
+		// sort the tracks by track then disc numbers
+		sort.Slice(tracks, func(i, j int) bool {
 			return tracks[i].Track < tracks[j].Track
 		})
-		sort.SliceStable(tracks, func(i, j int) bool { //sort by disc (stable)
+		sort.SliceStable(tracks, func(i, j int) bool {
 			return tracks[i].Disc < tracks[j].Disc
 		})
 
-		// ensure the tags line up
-		disc_total := album.Tracks[0].DiscTotal //tentative
-		track_target := album.Tracks[0].TrackTotal //target track count for this disc
-		//track_prev := 0
-		//disc_prev := 1
-		passed := true //change this to false if something goes wrong
+		//fmt.Println("AFTER SORTING")
+		//fmt.Println(album_c)
+		//fmt.Println("URGH")
 
-		if album.Title != "SOLO" || !slices.Equal(album.Artists, []string{"SOLO"}) {
-			for _, track := range tracks {
+		// establish a disc map and place the tracks into the right disc
+		disc_map := map[uint64]*Disc{}
+		disc_total := album_c.Tracks[0].DiscTotal
+		for i, track := range tracks {
+			// throw tracks into the right disc
+			if track.DiscTotal != disc_total {
+				fmt.Println("FAILED ALBUM [DISCTOTAL MISMATCH BETWEEN INDEX i AND INDEX 0]:", album_c.Artists, album_c.Title, track.Path, album_c.Tracks[0].Path)
+				fmt.Println("--INDEX", i)
+				fmt.Println("--INDEX i DISCTOTAL", track.DiscTotal)
+				fmt.Println("--INDEX 0 DISCTOTAL", album_c.Tracks[0].DiscTotal)
+				passed = false
+				break
+			}
 
-				// verify disc_total
-				if track.DiscTotal != disc_total {
-					passed = false
-					fmt.Println("FAILED ALBUM [MISMATCHED DISCTOTAL TAG]:", album.Artists, album.Title)
+			// if the disc already exists, add to it, otherwise create it
+			disc, ok := disc_map[track.Disc]
+			if !ok {
+				disc = &Disc{
+					Tracks: []Track{track},
 				}
-
-				if track.TrackTotal != track_target && track.Track != 1 {
-					passed = false
-					fmt.Println("FAILED ALBUM [MISMATCHED TRACKTOTAL OR TRACK]:", album.Artists, album.Title)
-				}
-
-				//if track.Track != track_prev + 1 {
-				//	if track.Disc > disc_prev {
-				//		// this is fine, the disc has rolled over
-				//		disc_prev = track.Disc
-				//		track_prev =
-				//	}
-
-				//}
-
+				disc_map[track.Disc] = disc
+			} else {
+				disc.Tracks = append(disc.Tracks, track)
 			}
 		}
-
-		// dereference and collect
-		if passed {
-			cleansed_albums = append(cleansed_albums, *album)
+		if !passed {
+			continue
 		}
+
+		// now convert discs into a list and ensure their numerations make sense
+		discs := []Disc{}
+		for i := range uint64(len(disc_map)) {
+			i += 1
+			disc, ok := disc_map[i]
+			if !ok {
+				fmt.Println("FAILED ALBUM [ALBUM DISC NUMBERS NOT INCREMENTAL]:", album_c.Artists, album_c.Title)
+				fmt.Println("--DISC_MAP LENGTH", len(disc_map))
+				fmt.Println("--ATTEMPTED TO GRAB", i)
+				passed = false
+				break
+			} else {
+				discs = append(discs, *disc)
+			}
+		}
+		if !passed || uint64(len(discs)) != disc_total || uint64(len(disc_map)) != disc_total {
+			continue
+		}
+
+		// process the track numbers, now that the number of discs is verified and their creation contains the right tracks
+		for _, disc := range discs {
+			for i, track := range disc.Tracks {
+				i += 1
+				if track.Track != uint64(i) || track.TrackTotal != uint64(len(disc.Tracks)) {
+					fmt.Println("FAILED ALBUM [MISMATCHED TRACKTOTAL OR TRACK TAG]:", album_c.Artists, album_c.Title)
+					passed = false
+					break
+				}
+			}
+		}
+		if !passed {
+			continue
+		}
+
+		// now that track numbers are verified, compile it all into a complete album
+		new_album := Album{
+			Artists: album_c.Artists,
+			Title: album_c.Title,
+			Year: album_c.Year,
+			Discs: discs,
+		}
+		album_collection = append(album_collection, new_album)
+
 	}
 
-	return cleansed_albums
+	return album_collection
 }
 
 

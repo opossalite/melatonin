@@ -20,13 +20,18 @@ type Track struct {
 
 
 
+type Disc struct {
+	Tracks []Track
+}
+
+
+
 type Album struct {
 	Artists []string
 	Title string
-	Tracks []Track
 	Year uint64
+	Discs []Disc
 }
-
 
 
 
