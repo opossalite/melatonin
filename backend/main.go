@@ -61,21 +61,10 @@ func expandAll(paths []string) []string {
 
 
 
-//func contains(list []string, item string) bool {
-//    for _, v := range list {
-//        if v == item {
-//            return true
-//        }
-//    }
-//    return false
-//}
-
-
-
-
 func main() {
 	// note, this returns a list of tracks
-	readTracks([]string{"~/Music"}, []string{"~/Music/,OLD"})
+	a := sortTracks(readTracks([]string{"~/Music"}, []string{"~/Music/,OLD"}))
+	fmt.Println(a)
 	return
 
 

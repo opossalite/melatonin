@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -200,15 +201,14 @@ func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
 
 
 
-//func readAlbums(folders []string) [][]Track {
 func readTracks(folders []string, exclude_folders []string) []Track {
 	fmt.Println("Reading local files...")
 	frontier := expandAll(folders)
 	exclude := expandAll(exclude_folders)
 
 	tracks := []Track{} //will be sorted later
-	mu := sync.Mutex{}
 	//failed := []string{}
+	mu := sync.Mutex{}
 
 	ctx := context.Background() //for commandline use
 
@@ -303,10 +303,102 @@ func readTracks(folders []string, exclude_folders []string) []Track {
 	}
 
 	wg.Wait()
-
-	//fmt.Println(tracks)
-
 	return tracks
+}
+
+
+
+type AlbumKey struct {
+	ArtistsConcat string
+	Album string
+}
+// Sort a list of tracks into a list of albums
+func sortTracks(tracks []Track) []Album {
+
+	// first create albums and assign tracks to them
+	album_map := make(map[AlbumKey]*Album)
+	
+	for i := range len(tracks) {
+		//artists := tracks[i].AlbumArtists
+		track := tracks[i]
+		artists := make([]string, 0, len(track.AlbumArtists))
+		copy(artists, track.AlbumArtists)
+		sort.Strings(artists)
+		artists_concat := strings.Join(artists, ";")
+		key := AlbumKey {artists_concat, track.Album}
+
+		album, ok := album_map[key]
+		if !ok {
+			album = &Album{
+				Artists: track.AlbumArtists,
+				Title: track.Album,
+				Tracks: []Track{track},
+				Year: 0,
+
+			}
+			album_map[key] = album
+		} else {
+			album.Tracks = append(album.Tracks, track)
+		}
+	}
+
+	// extract the albums from the map into a list instead
+	albums := make([]*Album, 0, len(album_map))
+	for _, album := range album_map {
+		albums = append(albums, album)
+	}
+
+	cleansed_albums := make([]Album, 0, len(albums)) //best case scenario capacity
+
+	// now we want to sort the tracks by track then disc numbers
+	for _, album := range albums {
+		sort.Slice(tracks, func(i, j int) bool { //sort by track
+			return tracks[i].Track < tracks[j].Track
+		})
+		sort.SliceStable(tracks, func(i, j int) bool { //sort by disc (stable)
+			return tracks[i].Disc < tracks[j].Disc
+		})
+
+		// ensure the tags line up
+		disc_total := album.Tracks[0].DiscTotal //tentative
+		track_target := album.Tracks[0].TrackTotal //target track count for this disc
+		//track_prev := 0
+		//disc_prev := 1
+		passed := true //change this to false if something goes wrong
+
+		if album.Title != "SOLO" || !slices.Equal(album.Artists, []string{"SOLO"}) {
+			for _, track := range tracks {
+
+				// verify disc_total
+				if track.DiscTotal != disc_total {
+					passed = false
+					fmt.Println("FAILED ALBUM [MISMATCHED DISCTOTAL TAG]:", album.Artists, album.Title)
+				}
+
+				if track.TrackTotal != track_target && track.Track != 1 {
+					passed = false
+					fmt.Println("FAILED ALBUM [MISMATCHED TRACKTOTAL OR TRACK]:", album.Artists, album.Title)
+				}
+
+				//if track.Track != track_prev + 1 {
+				//	if track.Disc > disc_prev {
+				//		// this is fine, the disc has rolled over
+				//		disc_prev = track.Disc
+				//		track_prev =
+				//	}
+
+				//}
+
+			}
+		}
+
+		// dereference and collect
+		if passed {
+			cleansed_albums = append(cleansed_albums, *album)
+		}
+	}
+
+	return cleansed_albums
 }
 
 

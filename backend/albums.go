@@ -24,6 +24,7 @@ type Album struct {
 	Artists []string
 	Title string
 	Tracks []Track
+	Year uint64
 }
 
 
