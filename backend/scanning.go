@@ -454,7 +454,8 @@ func sortTracks(tracks []Track) ([]Album) {
 			continue
 		}
 
-		// process the track numbers, now that the number of discs is verified and their creation contains the right tracks
+		// process the track numbers and establish years, now that the number of discs is verified and their creation contains the right tracks
+		year := uint64(0)
 		for _, disc := range discs {
 			for i, track := range disc.Tracks {
 				i += 1
@@ -462,6 +463,9 @@ func sortTracks(tracks []Track) ([]Album) {
 					fmt.Println("FAILED ALBUM [MISMATCHED TRACKTOTAL OR TRACK TAG]:", album_c.Artists, album_c.Title)
 					passed = false
 					break
+				}
+				if track.Year > year {
+					year = track.Year
 				}
 			}
 		}
@@ -473,11 +477,10 @@ func sortTracks(tracks []Track) ([]Album) {
 		new_album := Album{
 			Artists: album_c.Artists,
 			Title: album_c.Title,
-			Year: album_c.Year,
+			Year: year,
 			Discs: discs,
 		}
 		album_collection = append(album_collection, new_album)
-
 	}
 
 	return album_collection
