@@ -14,15 +14,15 @@
         left bar
         <AudioLines/>
 
-        {#each program_state.albums as album, i (album?.[0]?.title ?? i)}
+        {#each program_state.albums as album, i (album?.title ?? i)}
             <div
                 class="selected album-box"
                 class:selected={program_state.selected_album_index === i}
                 onclick={() => select(i)}
                 onkeydown={() => {}}
             >
-                <div class="album-title">{album[0].album}</div>
-                <div class="album-artists">{album[0].album_artists.join(", ")}</div>
+                <div class="album-title">{album.title}</div>
+                <div class="album-artists">{album.artists.join(", ")}</div>
             </div>
         {/each}
     </div>

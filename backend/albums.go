@@ -21,16 +21,16 @@ type Track struct {
 
 
 type Disc struct {
-	Tracks []Track
+	Tracks []Track `json:"tracks"`
 }
 
 
 
 type Album struct {
-	Artists []string
-	Title string
-	Year uint64
-	Discs []Disc
+	Artists []string `json:"artists"`
+	Title string `json:"title"`
+	Year uint64 `json:"year"`
+	Discs []Disc `json:"discs"`
 }
 
 

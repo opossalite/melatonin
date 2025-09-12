@@ -1,36 +1,40 @@
-// Songs are in the form of Artist - Album - Song
-//   and as such, albums are Artist - Album to ensure no duplicates
 
-//interface Album {
-//    artists: string[],
-//    title: string,
-//    songs: string[],
-//}
-//
-//
-//export class AlbumState {
-//    public albums: Album[] = $state([]);
-//}
 
-interface Track {
-    title: string,
-    artists: string[],
-    album: string,
-    album_artists: string[],
-    year: string,
-    track_no: string,
-    track_count: string,
-    cd_no: string,
-    cd_count: string,
-    //eventually add cover as well
 
+export interface Track {
+    title: string;
+    artists: string[];
+    album: string;
+    album_artists: string[];
+    year: number;
+    track: number;
+    track_total: number;
+    disc: number;
+    disc_total: number;
+    duration: number;
+    bitrate: number;
+    path: string;
 }
 
 
 
+export interface Disc {
+    tracks: Track[];
+}
+
+
+
+export interface Album {
+    artists: string[];
+    title: string;
+    year: number;
+    discs: Disc[];
+}
+
+
 export class ProgramState {
     // runtime
-    public albums: Track[][] = $state([]);
+    public albums: Album[] = $state([]);
     public selected_album_index: number | null = $state(null);
 
     // program settings

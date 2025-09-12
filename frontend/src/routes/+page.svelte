@@ -4,33 +4,26 @@
     import Footer from "$lib/Footer/Footer.svelte";
     import MainWindow from "$lib/MainWindow.svelte";
     import { onMount } from "svelte";
-    import { ProgramState } from "$lib/structures.svelte";
+    import { ProgramState, type Album } from "$lib/structures.svelte";
 
 
+
+    interface AlbumsResponse {
+        albums: Album[];
+    }
 
     // establish one singular set of albums that will be maintained by the whole program
     let program_state: ProgramState = $state(new ProgramState);
     onMount(async () => {
         //// retrieve albums, using the settings from before
-        //const response = await fetch("http://localhost:8800/get_albums");
-        //const json = await response.json();
-
-        //program_state.albums = json.albums;
 
         const response = await fetch("http://localhost:8800/get_albums", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ folders: program_state.folders }),
         });
-        const json = await response.json();
+        const json: AlbumsResponse = await response.json();
         program_state.albums = json.albums;
-
-
-
-
-
-
-
     });
 
     $effect(() => {

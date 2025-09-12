@@ -76,14 +76,14 @@ func main() {
 	// CORS for localhost dev (adjust as needed)
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173", "http://localhost:8080"},
-		AllowedMethods:   []string{"GET", "OPTIONS"},
+		AllowedMethods:   []string{"POST", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Content-Type", "Origin"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
 
-	router.Get("/get_albums", getAlbums)
+	router.Post("/get_albums", getAlbums)
 
 	log.Println("listening on :8800")
 	log.Fatal(http.ListenAndServe(":8800", router))
