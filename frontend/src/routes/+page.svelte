@@ -1,7 +1,7 @@
 <script lang="ts">
     import { browser } from "$app/environment";
-    import Header from "$lib/Header/Header.svelte";
-    import Footer from "$lib/Footer/Footer.svelte";
+    import Header from "$lib/Header.svelte";
+    import Footer from "$lib/Footer.svelte";
     import MainWindow from "$lib/MainWindow.svelte";
     import { onMount } from "svelte";
     import { ProgramState, type Album } from "$lib/structures.svelte";
