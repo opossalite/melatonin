@@ -104,15 +104,19 @@ func FFProbeTags(ctx context.Context, path string, solo bool) (Track, error) {
     for sc.Scan() {
 
 		// set up a pipeline to extract valuable info
-        line := strings.ToLower(strings.TrimSpace(sc.Text()))
-        if line == "" {
+        raw := strings.TrimSpace(sc.Text())
+        if raw == "" {
 			continue
         }
-		loc := strings.Index(line, "=")
-		key := line[:loc]
-		value := line[loc+1:]
+		loc := strings.IndexByte(raw, '=')
+		if loc < 0 {
+			continue
+		}
+		key := raw[:loc]
+		value := raw[loc+1:]
+		keyLower := strings.ToLower(key) //for case-insensitive matching
 
-		switch key {
+		switch keyLower {
 		case "duration": //no way this breaks
 			num, err := strconv.ParseFloat(value, 64)
 			if err != nil {

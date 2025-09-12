@@ -14,17 +14,22 @@
         left bar
         <AudioLines/>
 
-        {#each program_state.albums as album, i (album?.title ?? i)}
-            <div
-                class="selected album-box"
-                class:selected={program_state.selected_album_index === i}
-                onclick={() => select(i)}
-                onkeydown={() => {}}
-            >
-                <div class="album-title">{album.title}</div>
-                <div class="album-artists">{album.artists.join(", ")}</div>
-            </div>
-        {/each}
+        {#if program_state.albums.length === 0}
+            <p>Reading local files...</p>
+        {:else}
+            {#each program_state.albums as album, i (album?.title ?? i)}
+                <div
+                    class="selected album-box"
+                    class:selected={program_state.selected_album_index === i}
+                    onclick={() => select(i)}
+                    onkeydown={() => {}}
+                >
+                    <div class="album-title">{album.title}</div>
+                    <div class="album-artists">{album.artists.join(", ")}</div>
+                </div>
+            {/each}
+        {/if}
+
     </div>
 </div>
 
