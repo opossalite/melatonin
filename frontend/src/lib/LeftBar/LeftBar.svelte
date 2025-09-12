@@ -41,12 +41,15 @@
     height: 100%;
 }
 
-
 #leftbar {
-    background: var(--background);
-    padding: 0.8rem;
-    height: 100%;
-    border-radius: 0.5rem;
+  background: var(--background);
+  padding: 0.8rem 0.8rem 1rem 0.8rem; /* small bottom padding only */
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable; /* keeps layout stable when scrollbar appears */
 }
 
 .album-box {
